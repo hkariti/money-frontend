@@ -12,11 +12,13 @@ export class DataviewComponent implements OnInit {
   constructor(private djangoService: DjangoFetchService) { }
 
   ngOnInit() {
-      this.fetchData();
   }
 
-  fetchData(): void {
-      this.djangoService.getData().subscribe(data => this.data = data);
+  fetchAllAccounts(): void {
+      this.djangoService.getData('accounts').subscribe(data => this.data = data);
+  }
+  fetchAllTransactions(): void {
+      this.djangoService.getData('transactions').subscribe(data => this.data = data);
   }
 
 }

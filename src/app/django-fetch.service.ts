@@ -7,10 +7,11 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 })
 export class DjangoFetchService {
 
-  private transactionsUrl = 'http://localhost:8000/transactions/get/transactions';
+  private transactionsBaseUrl = 'http://localhost:8000/transactions/get';
   constructor(private http: HttpClient) { }
 
-  getData(): Observable<Object[]> {
-    return this.http.get<Object[]>(this.transactionsUrl);
+  getData(query): Observable<Object[]> {
+    const transactionsUrl = this.transactionsBaseUrl + '/' + query;
+    return this.http.get<Object[]>(transactionsUrl);
   }
 }

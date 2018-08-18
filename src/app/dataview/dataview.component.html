@@ -1,3 +1,6 @@
-<p>
+<button (click)="fetchAllTransactions()">transactions</button>
+<button (click)="fetchAllAccounts()">accounts</button>
+<div *ngIf="data">Fetched data:</div>
+<pre>
 {{ data | json }}
-</p>
+</pre>
