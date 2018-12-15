@@ -4,11 +4,13 @@ import { NgModule } from '@angular/core';
 import { AppComponent } from './app.component';
 import { DataviewComponent } from './dataview/dataview.component';
 import { HttpClientModule } from '@angular/common/http';
+import { AddbillComponent } from './addbill/addbill.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    DataviewComponent
+    DataviewComponent,
+    AddbillComponent
   ],
   imports: [
     BrowserModule,
