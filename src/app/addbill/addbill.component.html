@@ -1,3 +1,27 @@
 <div>
 <button (click)="addBill()">add credit bill</button>
+<div *ngIf=showFields>
+    <table id="inputBillTable">
+        <tr>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Amount (original)</th>
+            <th>currency</th>
+            <th>Amount (in NIS)</th>
+        </tr>
+        <tr>
+            <td><input class="billDateInput" type="text"></td>
+            <td><input class="billDescInput" type="text"></td>
+            <td><input class="billOrigAmountInput" type="text"></td>
+            <td>
+                <select class="billCurrencyInput">
+                    <option value=NIS>NIS</option>
+                    <option value=USD>USD</option>
+                    <option value=EUR>EUR</option>
+                </select>
+            </td>
+            <td><input class="billAmountInput" type="text"></td>
+        </tr>
+    </table>
+</div>
 </div>
