@@ -1,0 +1,10 @@
+<h1 mat-dialog-title>Add Bill</h1>
+<div mat-dialog-content>
+  <mat-form-field class="fullwidth">
+    <textarea cdkFocusInitial #addbilltextbox matInput rows=10 wrap=off></textarea>
+  </mat-form-field>
+</div>
+<div mat-dialog-actions>
+  <button mat-button (click)="closeDialog()">No Thanks</button>
+  <button mat-button [mat-dialog-close]="addbilltextbox.value" cdkFocusInitial>Ok</button>
+</div>

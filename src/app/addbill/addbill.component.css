@@ -1,0 +1,4 @@
+input.money-amount::-webkit-outer-spin-button,
+input.money-amount::-webkit-inner-spin-button {
+  display: none;
+}

@@ -1,27 +1,58 @@
-<div>
-<button (click)="addBill()">add credit bill</button>
-<div *ngIf=showFields>
-    <table id="inputBillTable">
-        <tr>
-            <th>Date</th>
-            <th>Description</th>
-            <th>Amount (original)</th>
-            <th>currency</th>
-            <th>Amount (in NIS)</th>
-        </tr>
-        <tr>
-            <td><input class="billDateInput" type="text"></td>
-            <td><input class="billDescInput" type="text"></td>
-            <td><input class="billOrigAmountInput" type="text"></td>
-            <td>
-                <select class="billCurrencyInput">
-                    <option value=NIS>NIS</option>
-                    <option value=USD>USD</option>
-                    <option value=EUR>EUR</option>
-                </select>
-            </td>
-            <td><input class="billAmountInput" type="text"></td>
-        </tr>
-    </table>
-</div>
-</div>
+<button mat-button (click)="addDumpClick()">Add dump</button>
+<button mat-button (click)="clearTable()">Clear</button>
+<table mat-table #inputBillTable  [dataSource]="data" style="width: 100%">
+    <ng-container matColumnDef="billedAmount">
+        <th mat-header-cell *matHeaderCellDef>Billed Amount</th>
+        <td mat-cell *matCellDef="let entry">
+            <mat-form-field style="width: 80px">
+                <input matInput type=number class=money-amount [(ngModel)]="entry.billedAmount" (keyup)="commit()">
+            </mat-form-field>
+        </td>
+    </ng-container>
+    <ng-container matColumnDef="description">
+        <th mat-header-cell *matHeaderCellDef>Description</th>
+        <td mat-cell *matCellDef="let entry">
+            <mat-form-field style="width: 160px">
+                <input matInput type=text [(ngModel)]="entry.description" (keyup)="commit()">
+            </mat-form-field>
+        </td>
+    </ng-container>
+    <ng-container matColumnDef="transactionAmount">
+        <th mat-header-cell *matHeaderCellDef>Transaction Amount</th>
+        <td mat-cell *matCellDef="let entry">
+            <mat-form-field style="width: 80px">
+                <input matInput type=number class=money-amount [(ngModel)]="entry.transactionAmount" (keyup)="commit()">
+            </mat-form-field>
+        </td>
+    </ng-container>
+    <ng-container matColumnDef="currency">
+        <th mat-header-cell *matHeaderCellDef>Currency</th>
+        <td mat-cell *matCellDef="let entry">
+            <mat-form-field style="width: 50px">
+                <mat-select [(value)]="entry.currency" (selectionChange)="commit()">
+                    <mat-option *ngFor="let c of currencies" [value]="c">{{c}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+        </td>
+    </ng-container>
+    <ng-container matColumnDef="date">
+        <th mat-header-cell *matHeaderCellDef>Date</th>
+        <td mat-cell *matCellDef="let entry">
+            <mat-form-field>
+                <input matInput [matDatepicker]="datePicker" [(ngModel)]="entry.date" (dateChange)="commit()">
+                <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
+                <mat-datepicker #datePicker></mat-datepicker>
+            </mat-form-field>
+        </td>
+    </ng-container>
+    <ng-container matColumnDef="comments">
+        <th mat-header-cell *matHeaderCellDef>Comments</th>
+        <td mat-cell *matCellDef="let entry">
+            <mat-form-field style="width: 160px">
+                <input matInput type=text [(ngModel)]="entry.comments" (keyup)="commit()">
+            </mat-form-field>
+        </td>
+    </ng-container>
+    <tr mat-header-row *matHeaderRowDef="columnsToDisplay"></tr>
+    <tr mat-row *matRowDef="let myRowData; columns: columnsToDisplay"></tr>
+</table>
