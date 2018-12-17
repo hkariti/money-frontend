@@ -5,6 +5,7 @@ import { AppComponent } from './app.component';
 import { DataviewComponent } from './dataview/dataview.component';
 import { HttpClientModule } from '@angular/common/http';
 import { AddbillComponent } from './addbill/addbill.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 @NgModule({
   declarations: [
@@ -15,6 +16,7 @@ import { AddbillComponent } from './addbill/addbill.component';
   imports: [
     BrowserModule,
     HttpClientModule,
+    BrowserAnimationsModule,
   ],
   providers: [],
   bootstrap: [AppComponent]
