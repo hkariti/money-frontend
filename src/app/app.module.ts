@@ -8,13 +8,15 @@ import { AddbillComponent } from './addbill/addbill.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MyNavComponent } from './my-nav/my-nav.component';
 import { LayoutModule } from '@angular/cdk/layout';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule  } from '@angular/forms';
 import { MatTableModule, MatToolbarModule, MatButtonModule, MatSidenavModule, MatIconModule, MatListModule,
-  MatDialogModule, MatInputModule, MatSelectModule, MatDatepickerModule, MAT_DATE_LOCALE } from '@angular/material';
+  MatDialogModule, MatInputModule, MatSelectModule, MatDatepickerModule, MAT_DATE_LOCALE,
+  MatAutocompleteModule } from '@angular/material';
 import { MatMomentDateModule } from '@angular/material-moment-adapter';
 import { RouterModule, Routes } from '@angular/router';
 import { AddBillDialogComponent } from './add-bill-dialog/add-bill-dialog.component';
 import { AutofocusDirective } from './autofocus.directive';
+import { OutputBillDialogComponent } from './output-bill-dialog/output-bill-dialog.component';
 
 
 const appRoutes: Routes = [
@@ -30,11 +32,13 @@ const appRoutes: Routes = [
     MyNavComponent,
     AddBillDialogComponent,
     AutofocusDirective,
+    OutputBillDialogComponent,
   ],
   imports: [
     BrowserModule,
     HttpClientModule,
     FormsModule,
+    ReactiveFormsModule,
     BrowserAnimationsModule,
     LayoutModule,
     MatToolbarModule,
@@ -46,12 +50,14 @@ const appRoutes: Routes = [
     MatDialogModule,
     MatInputModule,
     MatSelectModule,
+    MatAutocompleteModule,
     MatDatepickerModule,
     MatMomentDateModule,
     RouterModule.forRoot(appRoutes),
   ],
   entryComponents: [
-    AddBillDialogComponent
+    AddBillDialogComponent,
+    OutputBillDialogComponent
   ],
   providers: [
     {provide: MAT_DATE_LOCALE, useValue: 'he-IL'}

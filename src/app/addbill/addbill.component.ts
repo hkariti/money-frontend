@@ -1,11 +1,15 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
+import { FormGroup, FormControl, FormArray, FormBuilder } from '@angular/forms';
 import { MatDialog, MatDialogRef } from '@angular/material';
 import { AddBillDialogComponent } from '../add-bill-dialog/add-bill-dialog.component';
+import { OutputBillDialogComponent } from '../output-bill-dialog/output-bill-dialog.component';
 import { MatTable } from '@angular/material';
 import { MAT_MOMENT_DATE_FORMATS, MomentDateAdapter } from '@angular/material-moment-adapter';
 import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
 import { AutofocusDirective } from '../autofocus.directive';
 import * as moment from 'moment';
+import { Observable, Subject } from 'rxjs';
+import { map, mergeAll } from 'rxjs/operators';
 
 export interface BillEntry {
   date: moment.Moment;
@@ -14,6 +18,7 @@ export interface BillEntry {
   currency: string;
   billedAmount: number;
   comments: string;
+  category: string;
 }
 @Component({
   selector: 'app-addbill',
@@ -21,36 +26,85 @@ export interface BillEntry {
   styleUrls: ['./addbill.component.css']
 })
 export class AddbillComponent implements OnInit {
-@ViewChild('inputBillTable') inputBillTable: MatTable<BillEntry>;
+@ViewChild('inputBillTable') inputBillTable: MatTable<FormGroup>;
 
-  data: BillEntry[] = [];
-  columnsToDisplay = ['date', 'billedAmount', 'description', 'currency', 'transactionAmount', 'comments'];
+  formsIndices: number[] = [];
+  forms: FormArray = new FormArray([], {updateOn: 'blur'});
+  columnsToDisplay = ['date', 'description', 'transactionAmount', 'currency', 'billedAmount', 'category', 'comments', 'delete'];
   currencies: string[] = [ 'USD', 'EUR', 'ILS' ];
-  constructor(public addBillDialog: MatDialog) { }
+  seenCategories: string[] = [];
+  formsToFilter = new Subject<Observable<string>>();
+  formsActivity: Observable<string> = this.formsToFilter.pipe(mergeAll());
+  filteredCategories: string[];
+  constructor(public dialog: MatDialog, private fb: FormBuilder) { }
 
   ngOnInit() {
-    const savedData: string = window.sessionStorage.getItem('transactionTable');
-    if (savedData) {
-      this.data = JSON.parse(savedData);
-      this.data.map((d) => d.date = moment(d.date));
+    const savedTable: string = window.sessionStorage.getItem('transactionTable');
+    const savedCategories: string = window.sessionStorage.getItem('seenCategories');
+    this.formsActivity.pipe(map((v) => this.filterCategories(v))).subscribe((l) => this.filteredCategories = l);
+
+    if (savedTable) {
+      const data = JSON.parse(savedTable);
+      data.map((d) => d.date = moment(d.date));
+      data.forEach(this.addEntry.bind(this));
+    }
+    if (savedCategories) {
+      this.seenCategories = JSON.parse(savedCategories);
     }
   }
 
+  addEntry(entry) {
+    const e: any = entry;
+    e.category = [ entry.category, { updateOn: 'change' } ];
+    const g = this.fb.group(e);
+    const categoryObservable = g.get('category').valueChanges;
+    this.formsToFilter.next(categoryObservable);
+    this.forms.push(g);
+    this.formsIndices.push(1);
+  }
+
   addDumpClick(): void {
-    const billDialog = this.addBillDialog.open(AddBillDialogComponent, { width: '50%' });
+    const billDialog = this.dialog.open(AddBillDialogComponent, { width: '50%' });
     billDialog.afterClosed().subscribe((r) => { this.parseInput(r); this.inputBillTable.renderRows(); });
   }
 
+  outputBill(): void {
+    const outputDialog = this.dialog.open(OutputBillDialogComponent, { width: '50%', data: this.forms.value });
+  }
+
   clearTable(): void {
-    this.data = [];
+    this.formsIndices = [];
+    this.forms = new FormArray([], {updateOn: 'blur'});
     window.sessionStorage.setItem('transactionTable', '');
     this.inputBillTable.renderRows();
   }
 
+  deleteRow(i): void {
+    this.formsIndices.splice(i, 1);
+    this.forms.removeAt(i);
+    this.inputBillTable.renderRows();
+    this.commit();
+  }
+
+  initFilter(): void {
+    this.filteredCategories = this.seenCategories;
+  }
+
+  updateCategories(): void {
+    const seenCategoriesWithDups: string[] = this.forms.value.map((e) => e.category.trim()).filter((c) => c.length);
+    this.seenCategories = Array.from(new Set(seenCategoriesWithDups));
+  }
+
+  filterCategories(curValue): string[] {
+    return this.seenCategories.filter((c) => c.toLowerCase().includes(curValue.toLowerCase()));
+  }
+
   commit(): void {
-    window.sessionStorage.setItem('transactionTable', JSON.stringify(this.data));
+    window.sessionStorage.setItem('transactionTable', JSON.stringify(this.forms.value));
+    window.sessionStorage.setItem('seenCategories', JSON.stringify(Array.from(this.seenCategories)));
   }
   parseInput(textInput: string): void {
+    textInput = textInput.trim();
     if (!textInput) { return; }
     const rows = textInput.split('\n');
     rows.forEach((row) => {
@@ -61,9 +115,10 @@ export class AddbillComponent implements OnInit {
         description: columns[1],
         comments: columns[3],
         billedAmount: parseFloat(columns[4]),
-        currency: 'ILS'
+        currency: 'ILS',
+        category: ''
       };
-      this.data.push(entry);
+      this.addEntry(entry);
     });
     this.commit();
   }
