@@ -6,5 +6,11 @@
 </div>
 <div mat-dialog-actions>
   <button mat-button (click)="closeDialog()">No Thanks</button>
-  <button mat-button [mat-dialog-close]="addbilltextbox.value" cdkFocusInitial>Ok</button>
+  <button mat-button [mat-dialog-close]="{ value: addbilltextbox.value, format: format }" cdkFocusInitial>Ok</button>
+  <mat-form-field style="position: relative; right: -34%">
+      <mat-select placeholder="Input Format" [(value)]="format">
+          <mat-option value=leumi>Leumi</mat-option>
+          <mat-option value=leumicard>Leumi Card</mat-option>
+      </mat-select>
+  </mat-form-field>
 </div>

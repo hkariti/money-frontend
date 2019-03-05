@@ -10,16 +10,8 @@ import { AutofocusDirective } from '../autofocus.directive';
 import * as moment from 'moment';
 import { Observable, Subject } from 'rxjs';
 import { map, mergeAll } from 'rxjs/operators';
+import { parseDump } from './parsers';
 
-export interface BillEntry {
-  date: moment.Moment;
-  transactionAmount: number;
-  description: string;
-  currency: string;
-  billedAmount: number;
-  comments: string;
-  category: string;
-}
 @Component({
   selector: 'app-addbill',
   templateUrl: './addbill.component.html',
@@ -46,26 +38,29 @@ export class AddbillComponent implements OnInit {
     if (savedTable) {
       const data = JSON.parse(savedTable);
       data.map((d) => d.date = moment(d.date));
-      data.forEach(this.addEntry.bind(this));
+      this.addEntries(data);
     }
     if (savedCategories) {
       this.seenCategories = JSON.parse(savedCategories);
     }
   }
 
-  addEntry(entry) {
-    const e: any = entry;
-    e.category = [ entry.category, { updateOn: 'change' } ];
-    const g = this.fb.group(e);
-    const categoryObservable = g.get('category').valueChanges;
-    this.formsToFilter.next(categoryObservable);
-    this.forms.push(g);
-    this.formsIndices.push(1);
+  addEntries(entries) {
+    const fg = entries.map((e) => {
+      e.category = [ e.category, { updateOn: 'change' } ];
+      return this.fb.group(e);
+    });
+    const categoryObservables = fg.map((g) => g.get('category').valueChanges);
+    categoryObservables.forEach((o) => this.formsToFilter.next(o));
+    fg.forEach((g) => {
+      this.forms.push(g);
+      this.formsIndices.push(1);
+    });
   }
 
   addDumpClick(): void {
     const billDialog = this.dialog.open(AddBillDialogComponent, { width: '50%' });
-    billDialog.afterClosed().subscribe((r) => { this.parseInput(r); this.inputBillTable.renderRows(); });
+    billDialog.afterClosed().subscribe((r) => { this.parseInput(r.value, r.format); this.inputBillTable.renderRows(); });
   }
 
   outputBill(): void {
@@ -103,23 +98,9 @@ export class AddbillComponent implements OnInit {
     window.sessionStorage.setItem('transactionTable', JSON.stringify(this.forms.value));
     window.sessionStorage.setItem('seenCategories', JSON.stringify(Array.from(this.seenCategories)));
   }
-  parseInput(textInput: string): void {
-    textInput = textInput.trim();
-    if (!textInput) { return; }
-    const rows = textInput.split('\n');
-    rows.forEach((row) => {
-      const columns = row.split('\t');
-      const entry: BillEntry = {
-        date: moment(columns[0], 'DD/MM/YY'),
-        transactionAmount: parseFloat(columns[2]),
-        description: columns[1],
-        comments: columns[3],
-        billedAmount: parseFloat(columns[4]),
-        currency: 'ILS',
-        category: ''
-      };
-      this.addEntry(entry);
-    });
+  parseInput(textInput: string, textFormat: string): void {
+    const entries = parseDump(textInput, textFormat);
+    this.addEntries(entries);
     this.commit();
   }
 }

@@ -10,6 +10,7 @@ import { MatDialog, MatDialogRef } from '@angular/material';
 export class AddBillDialogComponent implements OnInit {
 
   billInput: string;
+  format = 'leumi';
 
   constructor(public dialogRef: MatDialogRef<AddBillDialogComponent>) {}
 
