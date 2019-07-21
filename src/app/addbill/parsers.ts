@@ -10,15 +10,15 @@ interface BillEntry {
   category: string;
 }
 
-type ParseFunction = (row: string) => BillEntry;
+type ParseFunction = (row: string) => BillEntry[];
 
 interface ParseFunctionsMap {
   [type: string]: ParseFunction;
 }
 
 const parseFunctions: ParseFunctionsMap = {
-  leumi: parseLeumiRow,
-  leumicard: parseLeumiCardRow
+  leumi: parseLeumiDump,
+  leumicard: parseLeumiCardDump,
 };
 
 export function parseDump(dump: string, format: string): BillEntry[] {
@@ -27,27 +27,44 @@ export function parseDump(dump: string, format: string): BillEntry[] {
     return [];
   }
   const parseFunction = parseFunctions[format];
+
   if (!parseFunction) {
     throw new Error(`Invalid format: ${format}`);
   }
-  const rows = trimmed.split('\n').map((r) => r.trim()).filter((r) => r);
-  const entries = rows.map(parseFunction).filter((e) => e);
-  return entries;
+
+  return parseFunction(dump);
+}
+
+function splitRows(dump: string) : string[] {
+  return dump.split('\n').map((r) => r.trim()).filter((r) => r);
+}
+
+function parseLeumiDump(dump: string): BillEntry[] {
+  const rows = splitRows(dump);
+
+  return rows.map(parseLeumiRow);
 }
 
 function parseLeumiRow(row: string): BillEntry {
-    const columns = row.split('\t');
-    const entry: BillEntry = {
-      date: moment(columns[0], 'DD/MM/YY'),
-      transactionAmount: parseFloat(columns[2]),
-      description: columns[1],
-      comments: columns[3],
-      billedAmount: parseFloat(columns[4]),
-      currency: 'ILS',
-      category: ''
-    };
-    return entry;
-  }
+  const columns = row.split('\t');
+  const entry: BillEntry = {
+    date: moment(columns[0], 'DD/MM/YY'),
+    transactionAmount: parseFloat(columns[2]),
+    description: columns[1],
+    comments: columns[3],
+    billedAmount: parseFloat(columns[4]),
+    currency: 'ILS',
+    category: ''
+  };
+
+  return entry;
+}
+
+function parseLeumiCardDump(dump: string): BillEntry[] {
+  const rows = splitRows(dump);
+
+  return rows.map(parseLeumiCardRow).filter((e) => e);
+}
 
 function leumicardParseAmountCurrency(rawTransactionAmount: string): [string, string] {
   let transactionAmount;
@@ -69,29 +86,29 @@ function leumicardParseAmountCurrency(rawTransactionAmount: string): [string, st
 }
 
 function parseLeumiCardRow(row: string): BillEntry {
-    const columns = row.split('\t');
+  const columns = row.split('\t');
 
-    // Skip lines that aren't part of the transactions table
-    if (columns.length < 6) {
-      return null;
-    }
-
-    const date = moment(columns[0], 'DD/MM/YYYY');
-    // Skip lines with invalid date, e.g. the table title line
-    if (!date.isValid()) {
-      return null;
-    }
-    const [transactionAmount, currency] = leumicardParseAmountCurrency(columns[4]);
-    const billedAmount = columns[5].replace(',', '');
-
-    const entry: BillEntry = {
-      date: date,
-      transactionAmount: parseFloat(transactionAmount),
-      description: columns[2],
-      comments: columns[6],
-      billedAmount: parseFloat(billedAmount),
-      currency: currency,
-      category: ''
-    };
-    return entry;
+  // Skip lines that aren't part of the transactions table
+  if (columns.length < 6) {
+    return null;
   }
+
+  const date = moment(columns[0], 'DD/MM/YYYY');
+  // Skip lines with invalid date, e.g. the table title line
+  if (!date.isValid()) {
+    return null;
+  }
+  const [transactionAmount, currency] = leumicardParseAmountCurrency(columns[4]);
+  const billedAmount = columns[5].replace(',', '');
+
+  const entry: BillEntry = {
+    date: date,
+    transactionAmount: parseFloat(transactionAmount),
+    description: columns[2],
+    comments: columns[6],
+    billedAmount: parseFloat(billedAmount),
+    currency: currency,
+    category: ''
+  };
+  return entry;
+}
