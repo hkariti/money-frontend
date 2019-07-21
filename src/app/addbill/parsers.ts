@@ -19,6 +19,7 @@ interface ParseFunctionsMap {
 const parseFunctions: ParseFunctionsMap = {
   leumi: parseLeumiDump,
   leumicard: parseLeumiCardDump,
+  cal: parseCalDump,
 };
 
 export function parseDump(dump: string, format: string): BillEntry[] {
@@ -112,3 +113,74 @@ function parseLeumiCardRow(row: string): BillEntry {
   };
   return entry;
 }
+
+function extractCalTable(dump: string): string[] {
+  const rows = splitRows(dump);
+  let startIndex = null;
+  let endIndex = null;
+
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i];
+    if (startIndex === null) {
+      const date = moment(r, 'DD/MM/YY', true);
+      if (date.isValid()) {
+        startIndex = i;
+      }
+    } else {
+      if (r.startsWith('סה"כ:')) {
+        endIndex = i;
+        break;
+      }
+    }
+  }
+  if (startIndex === null || endIndex === null) {
+    throw new Error("Couldn't isolate table from dump");
+  }
+
+  return rows.slice(startIndex, endIndex);
+}
+
+function extractCalTableRows(table: string[]): string[][] {
+  return table.reduce((total, r) => {
+    const date = moment(r, 'DD/MM/YY', true);
+    if (date.isValid()) {
+      // New entry
+      const entry = [r];
+      total.push(entry)
+    } else {
+      // Existing entry
+      const entry = total[total.length - 1];
+      entry.push(r)
+    }
+    
+    return total;
+  }, []);
+}
+
+function parseCalAmount(amount: string): number {
+  const amountCurrency = amount.split(' ');
+
+  return parseFloat(amountCurrency[1].replace(',', ''));
+}
+
+function parseCalRow(row: string[]): BillEntry {
+  const entry: BillEntry = {
+    date: moment(row[0], 'DD/MM/YY'),
+    transactionAmount: parseCalAmount(row[2]),
+    description: row[1],
+    comments: row[4],
+    billedAmount: parseCalAmount(row[3]),
+    currency: 'ILS',
+    category: ''
+  };
+
+  return entry;
+}
+
+function parseCalDump(dump: string): BillEntry[] {
+  const table = extractCalTable(dump);
+  const rows = extractCalTableRows(table);
+
+  return rows.map(parseCalRow);
+}
+
