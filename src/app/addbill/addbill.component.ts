@@ -3,6 +3,8 @@ import { FormGroup, FormControl, FormArray, FormBuilder } from '@angular/forms';
 import { MatDialog, MatDialogRef } from '@angular/material';
 import { AddBillDialogComponent } from '../add-bill-dialog/add-bill-dialog.component';
 import { OutputBillDialogComponent } from '../output-bill-dialog/output-bill-dialog.component';
+import { TransactionService } from '../transaction.service';
+import { AccountService } from '../account.service';
 import { MatTable } from '@angular/material';
 import { MAT_MOMENT_DATE_FORMATS, MomentDateAdapter } from '@angular/material-moment-adapter';
 import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
@@ -22,22 +24,28 @@ export class AddbillComponent implements OnInit {
 
   formsIndices: number[] = [];
   forms: FormArray = new FormArray([], {updateOn: 'blur'});
-  columnsToDisplay = ['date', 'description', 'transactionAmount', 'currency', 'billedAmount', 'category', 'comments', 'delete'];
+  columnsToDisplay = ['date', 'description', 'transactionAmount', 'currency', 'billedAmount', 'category', 'notes', 'delete'];
   currencies: string[] = [ 'USD', 'EUR', 'ILS' ];
   seenCategories: string[] = [];
   formsToFilter = new Subject<Observable<string>>();
   formsActivity: Observable<string> = this.formsToFilter.pipe(mergeAll());
   filteredCategories: string[];
-  constructor(public dialog: MatDialog, private fb: FormBuilder) { }
+  accounts: object[];
+  selectedAccount: number;
+
+  constructor(public dialog: MatDialog, private fb: FormBuilder, private transactionService: TransactionService,
+    private accountService: AccountService) { }
 
   ngOnInit() {
     const savedTable: string = window.sessionStorage.getItem('transactionTable');
     const savedCategories: string = window.sessionStorage.getItem('seenCategories');
     this.formsActivity.pipe(map((v) => this.filterCategories(v))).subscribe((l) => this.filteredCategories = l);
+    this.accountService.getAll().subscribe((a) => this.accounts = a);
 
     if (savedTable) {
       const data = JSON.parse(savedTable);
-      data.map((d) => d.date = moment(d.date));
+      data.map((d) => d.transaction_date = moment(d.transaction_date));
+      data.map((d) => d.bill_date = moment(d.bill_date));
       this.addEntries(data);
     }
     if (savedCategories) {
@@ -74,6 +82,13 @@ export class AddbillComponent implements OnInit {
     this.inputBillTable.renderRows();
   }
 
+  saveToBackend(): void {
+    this.transactionService.put(this.forms.value).subscribe(
+      () => this.clearTable(),
+      () => console.log('failure'), // TODO: proper error handling
+    );
+  }
+
   deleteRow(i): void {
     this.formsIndices.splice(i, 1);
     this.forms.removeAt(i);
@@ -99,7 +114,7 @@ export class AddbillComponent implements OnInit {
     window.sessionStorage.setItem('seenCategories', JSON.stringify(Array.from(this.seenCategories)));
   }
   parseInput(textInput: string, textFormat: string): void {
-    const entries = parseDump(textInput, textFormat);
+    const entries = parseDump(textInput, textFormat).map((e) => ({...e, from_account: this.selectedAccount}));
     this.addEntries(entries);
     this.commit();
   }

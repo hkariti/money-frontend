@@ -1,13 +1,16 @@
 import * as moment from 'moment';
 
 interface BillEntry {
-  date: moment.Moment;
-  transactionAmount: number;
+  transaction_date: moment.Moment;
+  bill_date: moment.Moment;
+  from_account: number;
+  to_account: number;
+  transaction_amount: number;
   description: string;
-  currency: string;
-  billedAmount: number;
-  comments: string;
   category: string;
+  original_currency: string;
+  billed_amount: number;
+  notes: string;
 }
 
 type ParseFunction = (row: string) => BillEntry[];
@@ -36,7 +39,7 @@ export function parseDump(dump: string, format: string): BillEntry[] {
   return parseFunction(dump);
 }
 
-function splitRows(dump: string) : string[] {
+function splitRows(dump: string): string[] {
   return dump.split('\n').map((r) => r.trim()).filter((r) => r);
 }
 
@@ -49,12 +52,15 @@ function parseLeumiDump(dump: string): BillEntry[] {
 function parseLeumiRow(row: string): BillEntry {
   const columns = row.split('\t');
   const entry: BillEntry = {
-    date: moment(columns[0], 'DD/MM/YY'),
-    transactionAmount: parseFloat(columns[2]),
+    transaction_date: moment(columns[0], 'DD/MM/YY'),
+    bill_date: moment(columns[0], 'DD/MM/YY'),
+    transaction_amount: parseFloat(columns[2]),
     description: columns[1],
-    comments: columns[3],
-    billedAmount: parseFloat(columns[4]),
-    currency: 'ILS',
+    notes: columns[3],
+    billed_amount: parseFloat(columns[4]),
+    original_currency: 'ILS',
+    from_account: null,
+    to_account: null,
     category: ''
   };
 
@@ -103,13 +109,16 @@ function parseLeumiCardRow(row: string): BillEntry {
   const billedAmount = columns[5].replace(',', '');
 
   const entry: BillEntry = {
-    date: date,
-    transactionAmount: parseFloat(transactionAmount),
+    transaction_date: date,
+    bill_date: date,
+    transaction_amount: parseFloat(transactionAmount),
     description: columns[2],
-    comments: columns[6],
-    billedAmount: parseFloat(billedAmount),
-    currency: currency,
-    category: ''
+    notes: columns[6],
+    billed_amount: parseFloat(billedAmount),
+    original_currency: currency,
+    category: '',
+    from_account: null,
+    to_account: null
   };
   return entry;
 }
@@ -134,7 +143,7 @@ function extractCalTable(dump: string): string[] {
     }
   }
   if (startIndex === null || endIndex === null) {
-    throw new Error("Couldn't isolate table from dump");
+    throw new Error('Couldn\'t isolate table from dump');
   }
 
   return rows.slice(startIndex, endIndex);
@@ -146,13 +155,13 @@ function extractCalTableRows(table: string[]): string[][] {
     if (date.isValid()) {
       // New entry
       const entry = [r];
-      total.push(entry)
+      total.push(entry);
     } else {
       // Existing entry
       const entry = total[total.length - 1];
-      entry.push(r)
+      entry.push(r);
     }
-    
+
     return total;
   }, []);
 }
@@ -165,13 +174,16 @@ function parseCalAmount(amount: string): number {
 
 function parseCalRow(row: string[]): BillEntry {
   const entry: BillEntry = {
-    date: moment(row[0], 'DD/MM/YY'),
-    transactionAmount: parseCalAmount(row[2]),
+    transaction_date: moment(row[0], 'DD/MM/YY'),
+    bill_date: moment(row[0], 'DD/MM/YY'),
+    transaction_amount: parseCalAmount(row[2]),
     description: row[1],
-    comments: row[4],
-    billedAmount: parseCalAmount(row[3]),
-    currency: 'ILS',
-    category: ''
+    notes: row[4],
+    billed_amount: parseCalAmount(row[3]),
+    original_currency: 'ILS',
+    category: '',
+    from_account: null,
+    to_account: null
   };
 
   return entry;
