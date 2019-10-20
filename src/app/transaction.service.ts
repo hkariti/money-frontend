@@ -21,4 +21,8 @@ export class TransactionService {
   put(entries: object[]): Observable<any> {
     return this.http.post<object[]>(this.backendUrl, entries, this.httpOptions);
   }
+
+  getAll(): Observable<object[]> {
+    return this.http.get<object[]>(this.backendUrl);
+  }
 }

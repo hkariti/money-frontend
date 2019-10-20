@@ -2,7 +2,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 
 import { AppComponent } from './app.component';
-import { DataviewComponent } from './dataview/dataview.component';
+import { TransactionViewComponent } from './transaction-view/transaction-view.component';
 import { HttpClientModule } from '@angular/common/http';
 import { AddbillComponent } from './addbill/addbill.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -17,22 +17,25 @@ import { RouterModule, Routes } from '@angular/router';
 import { AddBillDialogComponent } from './add-bill-dialog/add-bill-dialog.component';
 import { AutofocusDirective } from './autofocus.directive';
 import { OutputBillDialogComponent } from './output-bill-dialog/output-bill-dialog.component';
+import { AccountViewComponent } from './account-view/account-view.component';
 
 
 const appRoutes: Routes = [
-  { path: 'view', component: DataviewComponent },
+  { path: 'transactions', component: TransactionViewComponent },
+  { path: 'accounts', component: AccountViewComponent },
   { path: 'addbill', component: AddbillComponent }
 ];
 
 @NgModule({
   declarations: [
     AppComponent,
-    DataviewComponent,
+    TransactionViewComponent,
     AddbillComponent,
     MyNavComponent,
     AddBillDialogComponent,
     AutofocusDirective,
     OutputBillDialogComponent,
+    AccountViewComponent,
   ],
   imports: [
     BrowserModule,

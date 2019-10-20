@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { DataviewComponent } from './dataview.component';
+import { TransactionViewComponent } from './transaction-view.component';
 
-describe('DataviewComponent', () => {
-  let component: DataviewComponent;
-  let fixture: ComponentFixture<DataviewComponent>;
+describe('TransactionViewComponent', () => {
+  let component: TransactionViewComponent;
+  let fixture: ComponentFixture<TransactionViewComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ DataviewComponent ]
+      declarations: [ TransactionViewComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(DataviewComponent);
+    fixture = TestBed.createComponent(TransactionViewComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
