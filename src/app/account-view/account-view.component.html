@@ -1,8 +1,33 @@
+<div>
+    <mat-form-field>
+        <input matInput placeholder="Account name" [formControl]="newAccountName">
+    </mat-form-field>
+    <button mat-button (click)="addAccount()">Add Account</button>
+</div>
+
 <table mat-table #accountsTable [dataSource]="accounts" style="width: 100%">
     <ng-container matColumnDef="name">
         <th mat-header-cell *matHeaderCellDef>Name</th>
-        <td mat-cell *matCellDef="let entry">
-            <span>{{ entry.name }}</span>
+        <td mat-cell *matCellDef="let entry; let i = index">
+            <mat-form-field *ngIf="editEntry == i; else disableEdit">
+                <input matInput placeholder="New Account name" [formControl]="editedAccountName">
+            </mat-form-field>
+            <ng-template #disableEdit>
+                <span>{{ entry.name }}</span>
+            </ng-template>
+        </td>
+    </ng-container>
+    <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let entry; let i = index">
+            <div *ngIf="editEntry == i; else disableEdit">
+                <button mat-button (click)="doneEdit(entry)"><mat-icon>done</mat-icon></button>
+                <button mat-button (click)="cancelEdit()"><mat-icon>cancel</mat-icon></button>
+            </div>
+            <ng-template #disableEdit>
+                <button mat-button (click)="enableEdit(i, entry)"><mat-icon>edit</mat-icon></button>
+                <button mat-button (click)="deleteAccount(entry.id)"><mat-icon>delete</mat-icon></button>
+            </ng-template>
         </td>
     </ng-container>
     <tr mat-header-row *matHeaderRowDef="columnsToDisplay"></tr>
