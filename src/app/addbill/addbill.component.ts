@@ -32,6 +32,15 @@ export class AddbillComponent implements OnInit {
   filteredCategories: string[];
   accounts: object[];
   selectedAccount: number;
+  newTransactionFG = this.fb.group({
+    transaction_date: null,
+    description: null,
+    transaction_amount: null,
+    original_currency: 'ILS',
+    billed_amount: null,
+    category: null,
+    notes: null,
+  });
 
   constructor(public dialog: MatDialog, private fb: FormBuilder, private transactionService: TransactionService,
     private accountService: AccountService) { }
@@ -69,6 +78,18 @@ export class AddbillComponent implements OnInit {
   addDumpClick(): void {
     const billDialog = this.dialog.open(AddBillDialogComponent, { width: '50%' });
     billDialog.afterClosed().subscribe((r) => { this.parseInput(r.value, r.format); this.inputBillTable.renderRows(); });
+  }
+
+  submitTransaction(form): void {
+    if (!form.valid) {
+      return;
+    }
+
+    form.value.transaction_date = moment(form.value.transaction_date);
+    form.value.bill_date = moment(form.value.bill_date);
+    this.addEntries([form.value]);
+    this.inputBillTable.renderRows();
+    this.newTransactionFG.reset();
   }
 
   outputBill(): void {

@@ -70,3 +70,25 @@
     <tr mat-header-row *matHeaderRowDef="columnsToDisplay"></tr>
     <tr mat-row *matRowDef="let myRowData; columns: columnsToDisplay"></tr>
 </table>
+<form [formGroup]="newTransactionFG" (ngSubmit)="submitTransaction(newTransactionFG)">
+    <p>Add new:</p>
+    <mat-form-field>
+        <input matInput [matDatepicker]="myDatepicker" placeholder="Date" required formControlName="transaction_date">
+        <mat-datepicker-toggle tabindex=-1 [for]="myDatepicker" matSuffix></mat-datepicker-toggle>
+        <mat-datepicker #myDatepicker></mat-datepicker>
+    </mat-form-field><br>
+
+    <mat-form-field><input matInput placeholder="Description" required formControlName="description"></mat-form-field><br>
+    <mat-form-field><input matInput type=number placeholder="Transaction Amount" required formControlName="transaction_amount"></mat-form-field><br>
+    <mat-form-field>
+        <mat-select placeholder="Currency" formControlName="original_currency" required value="ILS">
+            <mat-option *ngFor="let c of currencies" [value]="c">
+                {{c}}
+            </mat-option>
+        </mat-select>
+    </mat-form-field><br>
+    <mat-form-field><input matInput type=number placeholder="Billed Amount" formControlName="billed_amount"></mat-form-field><br>
+    <mat-form-field><input matInput placeholder="Category" formControlName="category"></mat-form-field><br>
+    <mat-form-field><input matInput placeholder="Notes" formControlName="notes"></mat-form-field><br>
+    <button type="submit" [disabled]="!newTransactionFG.valid">Add</button>
+</form>
