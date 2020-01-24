@@ -18,6 +18,7 @@ import { AddBillDialogComponent } from './add-bill-dialog/add-bill-dialog.compon
 import { AutofocusDirective } from './autofocus.directive';
 import { OutputBillDialogComponent } from './output-bill-dialog/output-bill-dialog.component';
 import { AccountViewComponent } from './account-view/account-view.component';
+import { FetchDialogComponent } from './fetch-dialog/fetch-dialog.component';
 
 
 const appRoutes: Routes = [
@@ -36,6 +37,7 @@ const appRoutes: Routes = [
     AutofocusDirective,
     OutputBillDialogComponent,
     AccountViewComponent,
+    FetchDialogComponent,
   ],
   imports: [
     BrowserModule,
@@ -60,6 +62,7 @@ const appRoutes: Routes = [
   ],
   entryComponents: [
     AddBillDialogComponent,
+    FetchDialogComponent,
     OutputBillDialogComponent
   ],
   providers: [

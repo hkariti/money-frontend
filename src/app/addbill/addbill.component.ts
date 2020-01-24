@@ -2,16 +2,18 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormGroup, FormControl, FormArray, FormBuilder } from '@angular/forms';
 import { MatDialog, MatDialogRef } from '@angular/material';
 import { AddBillDialogComponent } from '../add-bill-dialog/add-bill-dialog.component';
+import { FetchDialogComponent } from '../fetch-dialog/fetch-dialog.component';
 import { OutputBillDialogComponent } from '../output-bill-dialog/output-bill-dialog.component';
 import { TransactionService } from '../transaction.service';
 import { AccountService } from '../account.service';
+import { FetchService } from '../fetch.service';
 import { MatTable } from '@angular/material';
 import { MAT_MOMENT_DATE_FORMATS, MomentDateAdapter } from '@angular/material-moment-adapter';
 import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
 import { AutofocusDirective } from '../autofocus.directive';
 import * as moment from 'moment';
 import { Observable, Subject } from 'rxjs';
-import { map, mergeAll } from 'rxjs/operators';
+import { map, mergeMap, mergeAll } from 'rxjs/operators';
 import { parseDump } from './parsers';
 
 @Component({
@@ -43,7 +45,7 @@ export class AddbillComponent implements OnInit {
   });
 
   constructor(public dialog: MatDialog, private fb: FormBuilder, private transactionService: TransactionService,
-    private accountService: AccountService) { }
+    private accountService: AccountService, private fetchService: FetchService) { }
 
   ngOnInit() {
     const savedTable: string = window.sessionStorage.getItem('transactionTable');
@@ -78,6 +80,13 @@ export class AddbillComponent implements OnInit {
   addDumpClick(): void {
     const billDialog = this.dialog.open(AddBillDialogComponent, { width: '50%' });
     billDialog.afterClosed().subscribe((r) => { this.parseInput(r.value, r.format); this.inputBillTable.renderRows(); });
+  }
+
+  fetchClick(): void {
+    const fetchDialog = this.dialog.open(FetchDialogComponent, { width: '50%' });
+    fetchDialog.afterClosed().pipe(
+      mergeMap(({site, user, pass, month, year}) => this.fetchService.fetch(site, user, pass, month, year))
+    ).subscribe(this.inputBillTable.renderRows, console.error);
   }
 
   submitTransaction(form): void {
