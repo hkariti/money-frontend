@@ -13,6 +13,21 @@ interface BillEntry {
   notes: string;
 }
 
+interface TransactionEntry {
+  transaction_date: string;
+  bill_date: string;
+  id: number;
+  confirmation: number;
+  from_account: number;
+  to_account: number;
+  transaction_amount: number;
+  description: string;
+  category: string;
+  original_currency: string;
+  billed_amount: number;
+  notes: string;
+}
+
 type ParseFunction = (row: string) => BillEntry[];
 
 interface ParseFunctionsMap {
@@ -24,6 +39,24 @@ const parseFunctions: ParseFunctionsMap = {
   leumicard: parseLeumiCardDump,
   cal: parseCalDump,
 };
+
+export function parseTransactions(transactions: object[], account: object): BillEntry[] {
+  console.log(`Parsing transaction from account ${account}`);
+  const entries: BillEntry[] = transactions.map((t: TransactionEntry) => ({
+    transaction_date: moment(t.transaction_date),
+    bill_date:  moment(t.bill_date),
+    from_account: t.from_account,
+    to_account: t.to_account,
+    transaction_amount: t.transaction_amount,
+    description: t.description,
+    category: t.category,
+    original_currency: t.original_currency,
+    billed_amount: t.billed_amount,
+    notes: t.notes
+  }));
+
+  return entries;
+}
 
 export function parseDump(dump: string, format: string): BillEntry[] {
   const trimmed = dump.trim();

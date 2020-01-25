@@ -14,7 +14,7 @@ import { AutofocusDirective } from '../autofocus.directive';
 import * as moment from 'moment';
 import { Observable, Subject } from 'rxjs';
 import { map, mergeMap, mergeAll } from 'rxjs/operators';
-import { parseDump } from './parsers';
+import { parseDump, parseTransactions } from './parsers';
 
 @Component({
   selector: 'app-addbill',
@@ -75,6 +75,7 @@ export class AddbillComponent implements OnInit {
       this.forms.push(g);
       this.formsIndices.push(1);
     });
+    this.inputBillTable.renderRows();
   }
 
   addDumpClick(): void {
@@ -84,9 +85,16 @@ export class AddbillComponent implements OnInit {
 
   fetchClick(): void {
     const fetchDialog = this.dialog.open(FetchDialogComponent, { width: '50%' });
-    fetchDialog.afterClosed().pipe(
-      mergeMap(({site, user, pass, month, year}) => this.fetchService.fetch(site, user, pass, month, year))
-    ).subscribe(this.inputBillTable.renderRows, console.error);
+    fetchDialog.afterClosed().subscribe((r) => {
+      if (!r) { return; }
+      if (!r.user || !r.pass || !r.month || !r.year) { return; }
+      const site = 'leumicard';
+      const account = this.accounts.filter((v: any) =>  v.id === this.selectedAccount)[0];
+      this.fetchService.fetch(site, r.user, r.pass, r.month, r.year).pipe(
+        map((v) => parseTransactions(v, account)),
+        map(this.addEntries.bind(this)),
+      ).subscribe(console.log, console.error);
+    });
   }
 
   submitTransaction(form): void {

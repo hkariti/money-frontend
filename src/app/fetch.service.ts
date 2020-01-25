@@ -13,7 +13,7 @@ export class FetchService {
 
   fetch(site: string, user: string, pass: string, month: number, year: number): Observable<object[]> {
     const postData = {user, pass, month, year};
-    const url = `{this.backendUrl}{site}`;
+    const url = `${this.backendUrl}${site}`;
     return this.http.post<object[]>(url, postData);
   }
 }

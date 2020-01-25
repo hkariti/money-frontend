@@ -1,3 +1,33 @@
-<p>
-  fetch-dialog works!
-</p>
+<h1 mat-dialog-title>Fetch</h1>
+<div mat-dialog-content>
+    <form [formGroup]="formGroup">
+        <label>
+            Username:
+            <mat-form-field>
+                <input matInput type="text" formControlName="user">
+            </mat-form-field>
+        </label>
+        <label>
+            Password:
+            <mat-form-field>
+                <input matInput type="text" formControlName="pass">
+            </mat-form-field>
+        </label>
+        <label>
+            Month:
+            <mat-form-field>
+                <input matInput type="number" formControlName="month">
+            </mat-form-field>
+        </label>
+        <label>
+            Year:
+            <mat-form-field>
+                <input matInput type="number" formControlName="year">
+            </mat-form-field>
+        </label>
+    </form>
+</div>
+<div mat-dialog-actions>
+    <button mat-button (click)="cancel()">No Thanks</button>
+    <button mat-button (click)="submit()" cdkFocusInitial>Ok</button>
+</div>
